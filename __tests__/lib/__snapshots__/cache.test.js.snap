@@ -1,0 +1,87 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Cache Class cleanAllCache cleans all cache 1`] = `
+Object {
+  "cache": Object {
+    "CONNECT": Object {},
+    "DELETE": Object {},
+    "GET": Object {
+      "url": "data",
+    },
+    "HEAD": Object {},
+    "OPTIONS": Object {},
+    "POST": Object {},
+    "PUT": Object {},
+    "TRACE": Object {},
+    "TRACK": Object {},
+  },
+}
+`;
+
+exports[`Cache Class cleanAllCache cleans all cache 2`] = `
+Object {
+  "cache": Object {
+    "CONNECT": Object {},
+    "DELETE": Object {},
+    "GET": Object {},
+    "HEAD": Object {},
+    "OPTIONS": Object {},
+    "POST": Object {},
+    "PUT": Object {},
+    "TRACE": Object {},
+    "TRACK": Object {},
+  },
+}
+`;
+
+exports[`Cache Class constructor initialization store matches previous 1`] = `
+Object {
+  "cache": Object {
+    "CONNECT": Object {},
+    "DELETE": Object {},
+    "GET": Object {},
+    "HEAD": Object {},
+    "OPTIONS": Object {},
+    "POST": Object {},
+    "PUT": Object {},
+    "TRACE": Object {},
+    "TRACK": Object {},
+  },
+}
+`;
+
+exports[`Cache Class saveToCache saves to cache 1`] = `
+Object {
+  "cache": Object {
+    "CONNECT": Object {},
+    "DELETE": Object {},
+    "GET": Object {},
+    "HEAD": Object {},
+    "OPTIONS": Object {},
+    "POST": Object {
+      "url": "data",
+    },
+    "PUT": Object {},
+    "TRACE": Object {},
+    "TRACK": Object {},
+  },
+}
+`;
+
+exports[`Cache Class saveToCache saves to cache 2`] = `
+Object {
+  "cache": Object {
+    "CONNECT": Object {},
+    "DELETE": Object {},
+    "GET": Object {},
+    "HEAD": Object {},
+    "OPTIONS": Object {},
+    "POST": Object {
+      "url": "data",
+    },
+    "PUT": Object {},
+    "TRACE": Object {},
+    "TRACK": Object {},
+  },
+}
+`;
