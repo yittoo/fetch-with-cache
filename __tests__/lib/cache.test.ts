@@ -4,7 +4,7 @@ describe('Cache Class', () => {
   let cache: Cache;
 
   beforeEach(() => {
-    cache = new Cache();
+    cache = Cache.getInstance();
   });
 
   describe('constructor', () => {
