@@ -1,30 +1,23 @@
-import { CachePolicy, FetchCustomOptions, Method, RequestOptions } from '../interfaces/Fetch';
+import { CachePolicy, Fetch, GenerateRequestWithMethod, Method } from '../interfaces/Fetch';
 import { combine } from './helpers';
 import { Cache } from './cache';
+import { AnyObject } from '../interfaces/Helpers';
 
 export class FetchWithCache {
   private static cache: Cache;
-  // private defaultOptions: RequestOptions | undefined;
   private static defaultCachePolicy: CachePolicy;
-  private static instance: FetchWithCache;
 
-  private constructor(cache: Cache) {
-    FetchWithCache.cache = cache;
-    // this.defaultOptions = defaultOptions;
-    FetchWithCache.defaultCachePolicy = CachePolicy.networkOnly;
+  private constructor() {
   }
 
   private static isInitialized(): boolean {
-    return !!FetchWithCache.instance;
+    return !!FetchWithCache.cache;
   }
 
-  private static initialize(): FetchWithCache {
-    if (this.instance) {
-      return this.instance;
-    }
+  private static initialize() {
     const cache = Cache.getInstance();
-    this.instance = new FetchWithCache(cache);
-    return this.instance;
+    FetchWithCache.defaultCachePolicy = CachePolicy.networkOnly;
+    FetchWithCache.cache = cache;
   }
 
   private static assertInitialization() {
@@ -33,20 +26,21 @@ export class FetchWithCache {
     }
   }
 
-  private static baseFetch = async <T, R>(
-    url: string,
-    options: RequestOptions<T>,
-    customOptions: FetchCustomOptions
-  ): Promise<R> => {
-    // const optionsWithDefaults = combine(this.defaultOptions, options);
+  private static baseFetch = (url: string, options: RequestInit): Promise<Response> => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const response = await fetch(url, options);
 
-    const response = await fetch(url, options);
+        if (response.ok) {
+          return resolve(response);
+        }
 
-    if (response.ok) {
-      return customOptions.onSuccess<R>(response);
-    }
+        throw response;
+      } catch (error) {
+        reject(error);
+      }
+    })
 
-    return customOptions.onError(response);
   };
 
   private static shouldDoNetworkRequest = (cachePolicy: CachePolicy, method: Method, url: string): boolean => {
@@ -57,66 +51,110 @@ export class FetchWithCache {
     );
   };
 
-  private static generateRequestWithMethod =
-    <T, R>(method: Method) =>
-      (url: string, options: RequestOptions<T> | undefined, customOptions: FetchCustomOptions): Promise<R> => {
-        FetchWithCache.assertInitialization();
+  private static generateRequestWithMethod: GenerateRequestWithMethod =
+    (method) => async (url, options, customOptions) => {
+        return new Promise(async (resolve, reject) => {
+          try {
+            FetchWithCache.assertInitialization();
 
-        const optionsWithMethod = combine(options, {
-          method,
-        }) as RequestOptions<T>;
+            const optionsWithMethod = combine(options as AnyObject, {
+              method,
+            }) as RequestInit;
 
-        const cachePolicy = customOptions ? customOptions.cachePolicy : this.defaultCachePolicy;
+            const cachePolicy = customOptions ? customOptions.cachePolicy : this.defaultCachePolicy;
 
-        let result: Promise<R>;
+            let result: Response;
 
-        if (this.shouldDoNetworkRequest(cachePolicy, method, url)) {
-          result = FetchWithCache.baseFetch<T, R>(url, optionsWithMethod, customOptions);
+            if (this.shouldDoNetworkRequest(cachePolicy, method, url)) {
+              result = await FetchWithCache.baseFetch(url, optionsWithMethod);
 
-          if (cachePolicy !== CachePolicy.noCache) {
-            this.cache.saveToCache(method, url, result);
+              if (cachePolicy !== CachePolicy.noCache) {
+                const clone = result.clone();
+
+                const dataToSave = await clone[customOptions.successDataHandler]()
+
+                this.cache.saveToCache(method, url, dataToSave);
+              }
+            } else {
+              result = this.cache.readCache(method, url);
+            }
+            resolve(result);
+          } catch (error) {
+            reject(error);
           }
-        } else {
-          result = this.cache.readCache(method, url);
-        }
-
-        return result;
+        })
       };
 
   /**
    * Fetch with GET method
+   * @param {string} url
+   * @param {RequestOptions} RequestOptions native fetch options
+   * @param {FetchCustomOptions} FetchCustomOptions object to define FetchWithStore options
+   * @returns {Response} fetch api Response object
    */
-  public static get = FetchWithCache.generateRequestWithMethod('GET');
+  public static get: Fetch = FetchWithCache.generateRequestWithMethod('GET');
   /**
    * Fetch with HEAD method
+   * @param {string} url
+   * @param {RequestOptions} RequestOptions native fetch options
+   * @param {FetchCustomOptions} FetchCustomOptions object to define FetchWithStore options
+   * @returns {Response} fetch api Response object
    */
-  public static head = FetchWithCache.generateRequestWithMethod('HEAD');
+  public static head: Fetch = FetchWithCache.generateRequestWithMethod('HEAD');
   /**
    * Fetch with POST method
+   * @param {string} url
+   * @param {RequestOptions} RequestOptions native fetch options
+   * @param {FetchCustomOptions} FetchCustomOptions object to define FetchWithStore options
+   * @returns {Response} fetch api Response object
    */
-  public static post = FetchWithCache.generateRequestWithMethod('POST');
+  public static post: Fetch = FetchWithCache.generateRequestWithMethod('POST');
   /**
    * Fetch with CONNECT method
+   * @param {string} url
+   * @param {RequestOptions} RequestOptions native fetch options
+   * @param {FetchCustomOptions} FetchCustomOptions object to define FetchWithStore options
+   * @returns {Response} fetch api Response object
    */
-  public static connect = FetchWithCache.generateRequestWithMethod('CONNECT');
+  public static connect: Fetch = FetchWithCache.generateRequestWithMethod('CONNECT');
   /**
    * Fetch with TRACE method
+   * @param {string} url
+   * @param {RequestOptions} RequestOptions native fetch options
+   * @param {FetchCustomOptions} FetchCustomOptions object to define FetchWithStore options
+   * @returns {Response} fetch api Response object
    */
-  public static trace = FetchWithCache.generateRequestWithMethod('TRACE');
+  public static trace: Fetch = FetchWithCache.generateRequestWithMethod('TRACE');
   /**
    * Fetch with TRACK method
+   * @param {string} url
+   * @param {RequestOptions} RequestOptions native fetch options
+   * @param {FetchCustomOptions} FetchCustomOptions object to define FetchWithStore options
+   * @returns {Response} fetch api Response object
    */
-  public static track = FetchWithCache.generateRequestWithMethod('TRACK');
+  public static track: Fetch = FetchWithCache.generateRequestWithMethod('TRACK');
   /**
    * Fetch with DELETE method
+   * @param {string} url
+   * @param {RequestOptions} RequestOptions native fetch options
+   * @param {FetchCustomOptions} FetchCustomOptions object to define FetchWithStore options
+   * @returns {Response} fetch api Response object
    */
-  public static delete = FetchWithCache.generateRequestWithMethod('DELETE');
+  public static delete: Fetch = FetchWithCache.generateRequestWithMethod('DELETE');
   /**
    * Fetch with OPTIONS method
+   * @param {string} url
+   * @param {RequestOptions} RequestOptions native fetch options
+   * @param {FetchCustomOptions} FetchCustomOptions object to define FetchWithStore options
+   * @returns {Response} fetch api Response object
    */
-  public static options = FetchWithCache.generateRequestWithMethod('OPTIONS');
+  public static options: Fetch = FetchWithCache.generateRequestWithMethod('OPTIONS');
   /**
    * Fetch with PUT method
+   * @param {string} url
+   * @param {RequestOptions} RequestOptions native fetch options
+   * @param {FetchCustomOptions} FetchCustomOptions object to define FetchWithStore options
+   * @returns {Response} fetch api Response object
    */
-  public static put = FetchWithCache.generateRequestWithMethod('PUT');
+  public static put: Fetch = FetchWithCache.generateRequestWithMethod('PUT');
 }
