@@ -1,1 +1,1 @@
-export const globalStoreKey = '__FETCH_WITH_CACHE';
+export const globalStoreKey = '__UNSAFE_FETCH_WITH_CACHE';

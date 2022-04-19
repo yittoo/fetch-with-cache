@@ -1,14 +1,23 @@
 import { CacheStore } from '../interfaces/Cache';
 import { Method } from '../interfaces/Fetch';
-import { AnyObject } from '../interfaces/Helpers';
 import { globalStoreKey } from './constants';
 
 export class Cache {
   private storedData: CacheStore;
+  private static instance: Cache;
 
-  constructor() {
+  private constructor() { 
     const cacheStore = this.initializeCache();
     this.storedData = cacheStore;
+  }
+
+  public static getInstance() {
+    if (this.instance) {
+      return this.instance;
+    }
+
+    this.instance = new Cache();
+    return this.instance;
   }
 
   private makeCleanCache = (): CacheStore => ({
@@ -41,8 +50,10 @@ export class Cache {
     const cacheStore: CacheStore = this.makeCleanCache();
 
     if (typeof window !== 'undefined') {
-      // @ts-ignore
-      window[globalStoreKey] = cacheStore;
+      (window as { [key: string]: any })[globalStoreKey] = cacheStore;
+    }
+    if (typeof globalThis !== 'undefined') {
+      (globalThis as { [key: string]: any })[globalStoreKey] = cacheStore;
     }
 
     return cacheStore;
