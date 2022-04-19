@@ -1,9 +1,5 @@
 export interface BaseFetch {}
 
-export type RequestOptions<T = void> = Omit<RequestInit, 'options'> | {
-  body: T;
-};
-
 export type Method = 'GET' | 'HEAD' | 'POST' | 'CONNECT' | 'TRACE' | 'TRACK' | 'DELETE' | 'OPTIONS' | 'PUT';
 
 export enum CachePolicy {
