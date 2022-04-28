@@ -1,6 +1,6 @@
 import { Cache } from '../../src/lib/cache';
 
-describe('Cache Class', () => {
+describe('Cache class', () => {
   let cache: Cache;
 
   beforeEach(() => {

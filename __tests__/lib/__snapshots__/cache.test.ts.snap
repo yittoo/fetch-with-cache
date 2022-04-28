@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Cache Class cleanAllCache cleans all cache 1`] = `
+exports[`Cache class cleanAllCache cleans all cache 1`] = `
 Object {
   "cache": Object {
     "CONNECT": Object {},
@@ -18,7 +18,7 @@ Object {
 }
 `;
 
-exports[`Cache Class cleanAllCache cleans all cache 2`] = `
+exports[`Cache class cleanAllCache cleans all cache 2`] = `
 Object {
   "cache": Object {
     "CONNECT": Object {},
@@ -34,7 +34,7 @@ Object {
 }
 `;
 
-exports[`Cache Class constructor initialization store matches previous 1`] = `
+exports[`Cache class constructor initialization store matches previous 1`] = `
 Object {
   "cache": Object {
     "CONNECT": Object {},
@@ -50,7 +50,7 @@ Object {
 }
 `;
 
-exports[`Cache Class saveToCache saves to cache 1`] = `
+exports[`Cache class saveToCache saves to cache 1`] = `
 Object {
   "cache": Object {
     "CONNECT": Object {},
@@ -68,7 +68,7 @@ Object {
 }
 `;
 
-exports[`Cache Class saveToCache saves to cache 2`] = `
+exports[`Cache class saveToCache saves to cache 2`] = `
 Object {
   "cache": Object {
     "CONNECT": Object {},

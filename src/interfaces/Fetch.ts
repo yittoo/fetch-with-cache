@@ -1,5 +1,3 @@
-export interface BaseFetch {}
-
 export type Method = 'GET' | 'HEAD' | 'POST' | 'CONNECT' | 'TRACE' | 'TRACK' | 'DELETE' | 'OPTIONS' | 'PUT';
 
 export enum CachePolicy {
@@ -11,7 +9,7 @@ export enum CachePolicy {
 
 export type SuccessDataHandler = 'json' | 'text' | 'arrayBuffer' | 'blob' 
 
-export interface FetchCustomOptions {
+export type FetchCustomOptions = Partial<{
   /**
    * The option that dictates where to look first and whether response should be saved to cache or not
    * @constant CachePolicy.cacheFirst - look into cache first if exists return that otherwise fetch and save response to cache 
@@ -28,12 +26,23 @@ export interface FetchCustomOptions {
    * @constant blob EXPERIMENTAL - save as blob into store
    */
   successDataHandler: SuccessDataHandler
-}
+}>
 
 export type Fetch = {
-  (url: string, options: RequestInit | undefined, customOptions: FetchCustomOptions): Promise<Response>
+  (url: string, options?: RequestInit, customOptions?: FetchCustomOptions): Promise<Response>
 }
 
 export type GenerateRequestWithMethod = {
   (method: Method): Fetch
+}
+
+interface SaveToCacheParams {
+  result: Response;
+  method: Method;
+  url: string;
+  customOptions: FetchCustomOptions | undefined
+}
+
+export type SaveToCache = {
+  (params: SaveToCacheParams): void
 }

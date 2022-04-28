@@ -2,12 +2,13 @@
   "name": "fetch-with-cache",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "jest",
+    "test-watch": "jest --watch",
     "lint": "npm run eslint . --ext .js,.jsx,.ts,.tsx",
     "pretty": "prettier",
-    "build": "npx tsc"
+    "build": "rimraf dist && npx tsc"
   },
   "repository": {
     "type": "git",
@@ -30,6 +31,7 @@
     "@typescript-eslint/parser": "^5.13.0",
     "eslint": "^8.10.0",
     "jest": "^27.5.1",
+    "rimraf": "^3.0.2",
     "ts-jest": "^27.1.3",
     "typescript": "^4.6.2"
   }

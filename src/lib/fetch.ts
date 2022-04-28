@@ -1,46 +1,29 @@
-import { CachePolicy, Fetch, GenerateRequestWithMethod, Method } from '../interfaces/Fetch';
+import { CachePolicy, Fetch, FetchCustomOptions, GenerateRequestWithMethod, Method, SaveToCache, SuccessDataHandler } from '../interfaces/Fetch';
 import { combine } from './helpers';
 import { Cache } from './cache';
 import { AnyObject } from '../interfaces/Helpers';
 
 export class FetchWithCache {
-  private static cache: Cache;
-  private static defaultCachePolicy: CachePolicy;
-
-  private constructor() {
+  private static cache: Cache = Cache.getInstance();
+  private static defaultCustomOptions: FetchCustomOptions = {
+    cachePolicy: CachePolicy.networkOnly,
+    successDataHandler: 'text'
   }
 
-  private static isInitialized(): boolean {
-    return !!FetchWithCache.cache;
-  }
-
-  private static initialize() {
-    const cache = Cache.getInstance();
-    FetchWithCache.defaultCachePolicy = CachePolicy.networkOnly;
-    FetchWithCache.cache = cache;
-  }
-
-  private static assertInitialization() {
-    if (!FetchWithCache.isInitialized()) {
-      FetchWithCache.initialize();
-    }
+  private static getCustomOption = (customOptions: FetchCustomOptions | undefined, key: keyof FetchCustomOptions) => {
+    return customOptions && customOptions[key] ? customOptions[key] : this.defaultCustomOptions[key];
   }
 
   private static baseFetch = (url: string, options: RequestInit): Promise<Response> => {
     return new Promise(async (resolve, reject) => {
-      try {
-        const response = await fetch(url, options);
+      const response = await fetch(url, options);
 
-        if (response.ok) {
-          return resolve(response);
-        }
-
-        throw response;
-      } catch (error) {
-        reject(error);
+      if (response.ok) {
+        return resolve(response);
       }
-    })
 
+      return reject(response);
+    })
   };
 
   private static shouldDoNetworkRequest = (cachePolicy: CachePolicy, method: Method, url: string): boolean => {
@@ -53,37 +36,40 @@ export class FetchWithCache {
 
   private static generateRequestWithMethod: GenerateRequestWithMethod =
     (method) => async (url, options, customOptions) => {
-        return new Promise(async (resolve, reject) => {
-          try {
-            FetchWithCache.assertInitialization();
+      return new Promise(async (resolve, reject) => {
+        try {
+          const optionsWithMethod = combine(options as AnyObject, {
+            method,
+          }) as RequestInit;
 
-            const optionsWithMethod = combine(options as AnyObject, {
-              method,
-            }) as RequestInit;
+          const cachePolicy = this.getCustomOption(customOptions, 'cachePolicy') as CachePolicy;
 
-            const cachePolicy = customOptions ? customOptions.cachePolicy : this.defaultCachePolicy;
+          let result: Response;
 
-            let result: Response;
+          if (this.shouldDoNetworkRequest(cachePolicy, method, url)) {
+            result = await FetchWithCache.baseFetch(url, optionsWithMethod);
 
-            if (this.shouldDoNetworkRequest(cachePolicy, method, url)) {
-              result = await FetchWithCache.baseFetch(url, optionsWithMethod);
-
-              if (cachePolicy !== CachePolicy.noCache) {
-                const clone = result.clone();
-
-                const dataToSave = await clone[customOptions.successDataHandler]()
-
-                this.cache.saveToCache(method, url, dataToSave);
-              }
-            } else {
-              result = this.cache.readCache(method, url);
+            if (cachePolicy !== CachePolicy.noCache) {
+              this.saveToCache({ result, customOptions, method, url })
             }
-            resolve(result);
-          } catch (error) {
-            reject(error);
+          } else {
+            result = this.cache.readCache(method, url);
           }
-        })
-      };
+          resolve(result);
+        } catch (error) {
+          reject(error);
+        }
+      })
+    };
+
+  private static saveToCache: SaveToCache = async ({ result, customOptions, method, url }) => {
+    const clone = result.clone();
+    const successDataHandler = this.getCustomOption(customOptions, 'successDataHandler') as SuccessDataHandler;
+
+    const dataToSave = await clone[successDataHandler]()
+
+    this.cache.saveToCache(method, url, dataToSave);
+  }
 
   /**
    * Fetch with GET method
